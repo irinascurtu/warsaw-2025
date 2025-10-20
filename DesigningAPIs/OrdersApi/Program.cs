@@ -1,9 +1,11 @@
 
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using OrdersApi.Data;
-using OrdersApi.Data.Repositories;
+using Microsoft.Extensions.DependencyInjection;
+using Orders.Data;
+using Orders.Domain;
+using Orders.Service;
 using OrdersApi.Infrastructure;
-using OrdersApi.Service;
 using OrdersApi.Service.Clients;
 using OrdersApi.Services;
 
@@ -22,23 +24,41 @@ namespace OrdersApi
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
             });
 
-            builder.Services.AddAutoMapper(typeof(OrderProfileMapping).Assembly);
+           /// builder.Services.AddAutoMapper(typeof(OrderProfileMapping).Assembly);
             builder.Services.AddDbContext<OrderContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-            
+
 
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-           
+
             builder.Services.AddHttpClient<IProductStockServiceClient, ProductStockServiceClient>();
 
 
+            builder.Services.AddMassTransit(x =>
+            {
+                x.SetKebabCaseEndpointNameFormatter();
 
+                x.UsingRabbitMq((context, cfg) =>
+                {
+
+                    cfg.ReceiveEndpoint("order-created", e =>
+                    {
+                        e.UseMessageRetry(i =>
+                        {
+                            i.Immediate(2);
+                        });
+                    });
+
+                    cfg.ConfigureEndpoints(context);
+                });
+
+            });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            var app = builder.Build();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+            var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -51,9 +71,9 @@ namespace OrdersApi
                 }
             }
 
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
 
             app.MapControllers();

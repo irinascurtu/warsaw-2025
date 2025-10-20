@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using OrdersApi.Data.Domain;
-using OrdersApi.Models;
+using Contracts.Models;
+using Orders.Domain.Entities;
 
 namespace OrdersApi.Infrastructure
 {

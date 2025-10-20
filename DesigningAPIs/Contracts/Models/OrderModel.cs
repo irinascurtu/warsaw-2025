@@ -1,13 +1,15 @@
-﻿using OrdersApi.Data.Domain;
+﻿using Orders.Domain.Entities;
 
-namespace OrdersApi.Models
+namespace Contracts.Models
 {
     public class OrderModel
     {
         public OrderModel()
         {
-            Status = OrderStatus.Created;
+            Status = OrderStatus.Accepted;
         }
+
+        public Guid OrderId { get; set; }
         private OrderStatus Status { get; set; }
 
         //customer things

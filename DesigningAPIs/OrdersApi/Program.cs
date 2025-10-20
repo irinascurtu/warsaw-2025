@@ -4,6 +4,7 @@ using Contracts.Events;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using Orders.Data;
 using Orders.Domain;
 using Orders.Service;
@@ -25,15 +26,14 @@ namespace OrdersApi
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-                // Replace the incorrect line with the correct AutoMapper configuration
-               // builder.Services.AddAutoMapper(cfg => cfg.AddProfile<OrderProfileMapping>());
             });
 
-            builder.Services.AddAutoMapper(cfg=>
+            builder.Services.AddAutoMapper(cfg =>
             {
-                
             }, typeof(OrderProfileMapping));
-            builder.Services.AddDbContext<OrderContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddDbContext<OrderContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
@@ -46,7 +46,7 @@ namespace OrdersApi
             builder.Services.AddMassTransit(x =>
             {
                 x.SetKebabCaseEndpointNameFormatter();
-                
+
                 x.AddRequestClient<VerifyOrder>();
 
                 x.AddConsumer<OrderReceivedConsumer>();
@@ -67,24 +67,22 @@ namespace OrdersApi
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                // The UI title/version label; not the OpenAPI version
+                c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "My API",
-                    Version = "v1"
+                    Version = "v1",
                 });
             });
 
-            var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            var app = builder.Build();
+           
+
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI(c =>
-                {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
-                }); 
-                
+                app.UseSwagger(); // Generates /swagger/v1/swagger.json
+                app.UseSwaggerUI();
                 using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
                 {
                     serviceScope.ServiceProvider.GetService<OrderContext>().Database.EnsureCreated();

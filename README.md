@@ -9,3 +9,9 @@ docker pull mcr.microsoft.com/mssql/server:2022-latest
 
 docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong@Password" -p 1433:1433 --name sqlserver -d mcr.microsoft.com/mssql/server:2022-latest
 ```
+
+
+## COnnection string for sql server running in Docker
+```
+"DefaultConnection": "Server=localhost,1433;Database=ProductDB;User=sa;Password=YourStrong@Password;TrustServerCertificate=True;"
+```

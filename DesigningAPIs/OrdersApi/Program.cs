@@ -1,11 +1,9 @@
 
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Orders.Data;
 using Orders.Domain;
 using Orders.Service;
-using OrdersApi.Infrastructure;
 using OrdersApi.Service.Clients;
 using OrdersApi.Services;
 

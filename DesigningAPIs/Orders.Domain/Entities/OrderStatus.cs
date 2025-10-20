@@ -4,6 +4,8 @@ namespace Orders.Domain.Entities
 {
     public enum OrderStatus
     {
+        [Description("Acctepted")]
+        Accepted,
         [Description("Received")]//think about these as temporary orders
         Received,
 

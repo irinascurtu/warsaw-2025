@@ -1,4 +1,5 @@
-﻿using Orders.Domain.Entities;
+﻿
+using Orders.Domain.Entities;
 
 namespace Contracts.Models
 {
@@ -6,6 +7,7 @@ namespace Contracts.Models
     {
         public OrderModel()
         {
+            OrderId = Guid.NewGuid();
             Status = OrderStatus.Accepted;
         }
 

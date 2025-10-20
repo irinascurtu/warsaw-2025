@@ -1,16 +1,11 @@
 ﻿using AutoMapper;
-using AutoMapper.Execution;
 using Contracts.Events;
+using Contracts.Models;
 using MassTransit;
-using MassTransit.Configuration;
-using MassTransit.Transports;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Orders.Data;
 using Orders.Domain.Entities;
 using Orders.Service;
-using OrdersApi.Models;
 
 namespace OrdersApi.Services
 {

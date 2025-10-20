@@ -1,5 +1,5 @@
-﻿using Orders.Domain.Entities;
-using OrdersApi.Models;
+﻿using Contracts.Models;
+using Orders.Domain.Entities;
 
 namespace Orders.Service
 {

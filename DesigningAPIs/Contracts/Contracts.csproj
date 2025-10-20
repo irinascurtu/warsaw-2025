@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\learning\MyGit\from-rest-to-messaging\DesigningAPIs\Orders.Domain\Orders.Domain.csproj" />
+    <ProjectReference Include="..\Orders.Domain\Orders.Domain.csproj" />
   </ItemGroup>
 
 </Project>

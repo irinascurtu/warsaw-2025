@@ -8,6 +8,7 @@ using Orders.Domain;
 using Orders.Service;
 using OrdersApi.Infrastructure;
 using OrdersApi.Services;
+using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -41,14 +42,17 @@ namespace OrderCreation.Worker
                     services.AddMassTransit(x =>
                     {
                         x.SetKebabCaseEndpointNameFormatter();
-
+                     
                         var entryAssembly = Assembly.GetEntryAssembly();
                         x.AddConsumers(entryAssembly);
-                       
+                        x.AddConsumer<CreateOrderConsumer>();
+
                         x.UsingRabbitMq((context, cfg) =>
                         {
-                            cfg.UseMessageRetry(r => r.Immediate(2));
-
+                            cfg.ReceiveEndpoint("create-order", x =>
+                            {
+                                x.ConfigureConsumer<CreateOrderConsumer>(context);
+                            });
                             cfg.ConfigureEndpoints(context);
                         });
                     });

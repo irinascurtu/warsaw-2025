@@ -47,17 +47,15 @@ namespace OrdersApi
             {
                 x.SetKebabCaseEndpointNameFormatter();
 
-                x.AddRequestClient<VerifyOrder>();
 
-                x.AddConsumer<OrderReceivedConsumer>();
-                x.AddConsumer<VerifyOrderConsumer>();
+                x.AddEntityFrameworkOutbox<OrderContext>(o =>
+                {
+                    o.UseSqlServer();
+                    o.UseBusOutbox(x => x.DisableDeliveryService());
+                });
+
                 x.UsingRabbitMq((context, cfg) =>
                 {
-
-                    cfg.ReceiveEndpoint("order-received-notification", e =>
-                    {
-                        e.ConfigureConsumer<OrderReceivedConsumer>(context);
-                    });
 
                     cfg.ConfigureEndpoints(context);
                 });
@@ -65,19 +63,11 @@ namespace OrdersApi
             });
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                // The UI title/version label; not the OpenAPI version
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "My API",
-                    Version = "v1",
-                });
-            });
+            builder.Services.AddSwaggerGen();
 
 
             var app = builder.Build();
-           
+
 
             if (app.Environment.IsDevelopment())
             {

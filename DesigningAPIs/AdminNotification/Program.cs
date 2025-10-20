@@ -1,5 +1,9 @@
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Orders.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +27,22 @@ namespace AdminNotification
                     {
                         x.SetKebabCaseEndpointNameFormatter();
 
+                        services.AddDbContext<OrderContext>(options =>
+                        {
+                            options.UseSqlServer(hostContext.Configuration.GetConnectionString("DefaultConnection"));
+                            options.EnableSensitiveDataLogging(true);
+                        });
+
+                        x.AddEntityFrameworkOutbox<OrderContext>(o =>
+                        {
+                            o.UseSqlServer();
+                            o.DisableInboxCleanupService();
+                        });
+
+                        x.AddConfigureEndpointsCallback((context, name, cfg) =>
+                        {
+                            cfg.UseEntityFrameworkOutbox<OrderContext>(context);
+                        });
 
                         var entryAssembly = Assembly.GetEntryAssembly();
 

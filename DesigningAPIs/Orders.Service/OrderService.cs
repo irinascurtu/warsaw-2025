@@ -63,7 +63,7 @@ namespace OrdersApi.Services
         public async Task AcceptOrder(OrderModel model)
         {
             //validateOrder
-            model.OrderId = Guid.NewGuid();
+      
             var domainObject = mapper.Map<Order>(model);
 
 

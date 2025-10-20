@@ -37,7 +37,7 @@ namespace Orders.Data
         public async Task<Order> AddOrderAsync(Order order)
         {
             await _context.Orders.AddAsync(order);
-            //  await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
             return order;
         }
 

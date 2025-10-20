@@ -39,20 +39,7 @@ namespace OrdersApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Order>> PostOrder(OrderModel model)
         {
-            //var orderToAdd = _mapper.Map<Order>(model);
-            //var createdOrder = await _orderService.AddOrderAsync(orderToAdd);
-            var orderId = Guid.NewGuid();
-
-            var sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new Uri("queue:create-order"));
-
-
-            await sendEndpoint.Send(model);
-
-            await publishEndpoint.Publish<OrderReceived>(new OrderReceived()
-            {
-                OrderId = orderId
-            });
-
+            await _orderService.AcceptOrder(model);
             return Accepted();
         }
 

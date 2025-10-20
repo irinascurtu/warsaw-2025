@@ -35,14 +35,14 @@ namespace OrderCreation.Worker
             //mapping from Message to an order object
             var orderToAdd = mapper.Map<Order>(context.Message);
 
+           
+            var savedOrder = await orderService.AddOrderAsync(orderToAdd);
+
             var orderReceived = context.Publish(new OrderReceived()//maybe an admin does something
             {
                 CreatedAt = orderToAdd.OrderDate,
                 OrderId = orderToAdd.OrderId
             });
-            var savedOrder = await orderService.AddOrderAsync(orderToAdd);
-
-
 
             var notifyOrderCreated = context.Publish(new OrderCreated()
             {

@@ -2,6 +2,7 @@
 using Contracts.Commands;
 using Contracts.Events;
 using Contracts.Models;
+using Contracts.Responses;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Orders.Domain.Entities;
@@ -18,52 +19,61 @@ namespace OrdersApi.Controllers
         private readonly IProductStockServiceClient _productStockServiceClient;
         private readonly ISendEndpointProvider sendEndpointProvider;//used to send commands
         private readonly IPublishEndpoint publishEndpoint;
+        private readonly IRequestClient<VerifyOrder> requestClient;
         private readonly IMapper _mapper;
 
         public OrdersController(IOrderService orderService,
             IProductStockServiceClient productStockServiceClient,
             ISendEndpointProvider sendEndpointProvider,
-            IPublishEndpoint publishEndpoint,
-            IMapper mapper)
+            IPublishEndpoint publishEndpoint, IRequestClient<VerifyOrder> requestClient
+            )
         {
             _orderService = orderService;
             _productStockServiceClient = productStockServiceClient;
             this.sendEndpointProvider = sendEndpointProvider;
             this.publishEndpoint = publishEndpoint;
-            _mapper = mapper;
+            this.requestClient = requestClient;
+            //   _mapper = mapper;
         }
 
         [HttpPost]
         public async Task<ActionResult<Order>> PostOrder(OrderModel model)
         {
-            var orderToAdd = _mapper.Map<Order>(model);
-            var createdOrder = await _orderService.AddOrderAsync(orderToAdd);
+            //var orderToAdd = _mapper.Map<Order>(model);
+            //var createdOrder = await _orderService.AddOrderAsync(orderToAdd);
             var orderId = Guid.NewGuid();
 
             var sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new Uri("queue:create-order"));
-            await sendEndpoint.Send(new CreateOrder()
-            {
-                OrderId = orderId
-            });
+
+
+            await sendEndpoint.Send(model);
 
             await publishEndpoint.Publish<OrderReceived>(new OrderReceived()
             {
                 OrderId = orderId
             });
 
-            return CreatedAtAction("GetOrder", new { id = createdOrder.Id }, createdOrder);
+            return Accepted();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Order>> GetOrder(int id)
         {
-            var order = await _orderService.GetOrderAsync(id);
-            if (order == null)
+
+            var response = await requestClient.GetResponse<OrderResult, OrderNotFoundResult>(
+              new VerifyOrder { Id = id });
+
+            if (response.Is(out Response<OrderResult> incomingMessage))
             {
-                return NotFound();
+                return Ok(incomingMessage.Message);
             }
 
-            return Ok(order);
+            if (response.Is(out Response<OrderNotFoundResult> notfound))
+            {
+                return NotFound(notfound.Message.ErrorMessage);
+            }
+
+            return BadRequest();
         }
     }
 }

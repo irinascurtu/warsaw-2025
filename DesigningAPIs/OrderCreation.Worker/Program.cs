@@ -1,8 +1,13 @@
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Orders.Data;
+using Orders.Domain;
+using Orders.Service;
+using OrdersApi.Infrastructure;
+using OrdersApi.Services;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -19,6 +24,20 @@ namespace OrderCreation.Worker
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddDbContext<OrderContext>(options =>
+                    {
+                        options.UseSqlServer(hostContext.Configuration.GetConnectionString("DefaultConnection"));
+                        options.EnableSensitiveDataLogging(true);
+                    });
+
+                    services.AddScoped<IOrderRepository, OrderRepository>();
+                    services.AddScoped<IOrderService, OrderService>();
+                    services.AddAutoMapper(cfg =>
+                    {
+
+                    }, typeof(OrderProfileMapping));
+
+
                     services.AddMassTransit(x =>
                     {
                         x.SetKebabCaseEndpointNameFormatter();
@@ -28,6 +47,8 @@ namespace OrderCreation.Worker
                        
                         x.UsingRabbitMq((context, cfg) =>
                         {
+                            cfg.UseMessageRetry(r => r.Immediate(2));
+
                             cfg.ConfigureEndpoints(context);
                         });
                     });

@@ -1,5 +1,6 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,8 +30,11 @@ namespace AdminNotification
 
                         services.AddDbContext<OrderContext>(options =>
                         {
-                            options.UseSqlServer(hostContext.Configuration.GetConnectionString("DefaultConnection"));
-                            options.EnableSensitiveDataLogging(true);
+                            options.UseSqlServer(hostContext.Configuration.GetConnectionString("DefaultConnection"))
+                            .ConfigureWarnings(w => w.Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS));
+                            
+                            options.EnableSensitiveDataLogging(false);
+
                         });
 
                         x.AddEntityFrameworkOutbox<OrderContext>(o =>

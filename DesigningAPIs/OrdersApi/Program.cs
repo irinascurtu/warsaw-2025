@@ -3,6 +3,7 @@ using Contracts.Commands;
 using Contracts.Events;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Orders.Data;
@@ -33,8 +34,13 @@ namespace OrdersApi
             }, typeof(OrderProfileMapping));
 
             builder.Services.AddDbContext<OrderContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+                .ConfigureWarnings(w => w.Ignore(SqlServerEventId.SavepointsDisabledBecauseOfMARS));
 
+                options.EnableSensitiveDataLogging(false);
+
+            });
 
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IOrderService, OrderService>();
@@ -51,7 +57,8 @@ namespace OrdersApi
                 x.AddEntityFrameworkOutbox<OrderContext>(o =>
                 {
                     o.UseSqlServer();
-                    o.UseBusOutbox(x => x.DisableDeliveryService());
+                    //o.UseBusOutbox(x => x.DisableDeliveryService());
+                    o.UseBusOutbox();
                 });
 
                 x.UsingRabbitMq((context, cfg) =>

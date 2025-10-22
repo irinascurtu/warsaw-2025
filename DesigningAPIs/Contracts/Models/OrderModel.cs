@@ -21,5 +21,7 @@ namespace Contracts.Models
         //Shipping things
 
         public List<OrderItemModel> OrderItems { get; set; }
+        public string DeliveryInstructions { get; set; }
+
     }
 }

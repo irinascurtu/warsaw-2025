@@ -10,5 +10,7 @@
 
         public Customer Customer { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
+        public string DeliveryInstructions { get; set; }
+
     }
 }
